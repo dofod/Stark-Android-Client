@@ -1,21 +1,56 @@
 package in.saurabhdiaries.stark;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
+
+import in.saurabhdiaries.stark.Services.IntentListenerService;
+import in.saurabhdiaries.stark.Views.LoginView;
+import in.saurabhdiaries.stark.Views.MainLayout;
 
 
 public class MainActivity extends Activity
 {
+    Context context;
+    LinearLayout triggerList;
+    //String ip = "10.0.2.2";
+    //String ip = "172.24.0.10";
 
+    MainLayout mainLayout;
+    IntentListenerService service;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-    }
+        Settings.load(this);
 
+        if(Settings.get("ip")==null||Settings.get("username")==null||Settings.get("devicename")==null)
+        {
+            LoginView loginView = new LoginView(this);
+            loginView.build();
+            setContentView(loginView);
+        }
+        else
+        {
+            if(service==null)
+            {
+                startService(new Intent(this, IntentListenerService.class));
+                System.out.println("Starting Service");
+            }
+            else
+            {
+                System.out.println("Service Already Started");
+            }
+
+            mainLayout = new MainLayout(this);
+            mainLayout.build();
+            this.setContentView(mainLayout);
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -36,6 +71,7 @@ public class MainActivity extends Activity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings)
         {
+            mainLayout.set(MainLayout.CATEGORY.SETTINGS);
             return true;
         }
 
