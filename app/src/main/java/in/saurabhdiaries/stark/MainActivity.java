@@ -4,13 +4,17 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 
+import java.util.ArrayList;
+
 import in.saurabhdiaries.stark.Services.IntentListenerService;
 import in.saurabhdiaries.stark.Views.LoginView;
 import in.saurabhdiaries.stark.Views.MainLayout;
+import in.saurabhdiaries.stark.Views.SettingsView;
 
 
 public class MainActivity extends Activity
@@ -50,6 +54,23 @@ public class MainActivity extends Activity
             mainLayout.build();
             this.setContentView(mainLayout);
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if (requestCode == Settings.SPEECH_ID && resultCode == RESULT_OK)
+        {
+            // Populate the wordsList with the String values the recognition engine thought it heard
+
+            ArrayList<String> matches = data.getStringArrayListExtra(
+                    RecognizerIntent.EXTRA_RESULTS);
+            for(String sentence: matches)
+            {
+                System.out.println(sentence);
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

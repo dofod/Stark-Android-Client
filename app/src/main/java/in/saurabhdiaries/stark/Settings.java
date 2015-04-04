@@ -42,4 +42,6 @@ public class Settings
         }
         return null;
     }
+
+    public static final int SPEECH_ID = 1337;
 }

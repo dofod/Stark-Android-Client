@@ -1,13 +1,24 @@
 package in.saurabhdiaries.stark.Views;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.content.Context;
+import android.content.Intent;
 import android.net.wifi.WifiManager;
+import android.speech.RecognizerIntent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.StringRequest;
+
+import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -72,5 +83,67 @@ public class SettingsView extends LinearLayout
         });
         this.addView(alarm);
 
+        Button talk = new Button(context);
+        talk.setId(Settings.id++);
+        talk.setText("Talk");
+        talk.setOnClickListener(new OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Say Something");
+                ((Activity)context).startActivityForResult(intent, Settings.SPEECH_ID);
+            }
+        });
+        this.addView(talk);
+
+    }
+
+    public static void recognizeSpeech(final String sentence)
+    {
+        String url = "http://" + Settings.get("ip") + ":8000/api/v1/event/?devicename=" + Settings.get("devicename") + "&auth_token=" + Settings.get("auth_token");
+        StringRequest jsonRequest = new StringRequest(Request.Method.POST,
+                url, new Response.Listener<String>()
+        {
+            @Override
+            public void onResponse(String response)
+            {
+
+            }
+        }, new Response.ErrorListener()
+        {
+            @Override
+            public void onErrorResponse(VolleyError error)
+            {
+                VolleyLog.d("Volley Error", "Error: " + error.getMessage());
+            }
+        })
+        {
+
+            @Override
+            public byte[] getBody() throws AuthFailureError
+            {
+                try
+                {
+                    String data = "{\"speech\":\"" + sentence + "\"}";
+                    System.out.println(data);
+                    return data.getBytes(getParamsEncoding());
+                } catch (UnsupportedEncodingException e)
+                {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            public String getBodyContentType()
+            {
+                return "application/json";
+            }
+        };
+        Settings.requestQueue.add(jsonRequest);
     }
 }
